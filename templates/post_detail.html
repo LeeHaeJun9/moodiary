@@ -1,15 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Moodiary - 감정 일기장</title>
-</head>
-<body>
-  <h2>{{ post.title }}</h2>
+{% extends "layout.html" %}
+
+{% block title %}{{ post.title if post.title else '감정 일기' }} - Moodiary{% endblock %}
+
+{% block content %}
+  <h2>{{ post.title if post.title else '[제목 없는 감정]' }}</h2>
+
   <p>{{ post.content }}</p>
   <p><small>작성자: {{ post.author.name }} | {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+
+  <p>❤️ 공감 {{ post.likes | length }}개</p>
+
+  {% if current_user.is_authenticated %}
+    {% set liked = false %}
+    {% for like in post.likes %}
+      {% if like.user.id == current_user.id %}
+        {% set liked = true %}
+      {% endif %}
+    {% endfor %}
+
+    <form action="{{ url_for('like', post_id=post.id) }}" method="post">
+      <button type="submit">
+        {% if liked %}
+          공감 취소하기
+        {% else %}
+          공감하기
+        {% endif %}
+      </button>
+    </form>
+  {% endif %}
+
   <hr>
+
   {% if current_user.is_authenticated and current_user.id == post.author.id %}
     <details>
       <summary>[수정하기]</summary>
@@ -31,5 +52,4 @@
 
   <br>
   <a href="{{ url_for('index') }}">[목록으로]</a>
-</body>
-</html>
+{% endblock %}

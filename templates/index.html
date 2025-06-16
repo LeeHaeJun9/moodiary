@@ -1,43 +1,32 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <title>Moodiary - 감정 일기장</title>
-</head>
-<body>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for msg in messages %}
-            <li>{{ msg }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
+{% extends "layout.html" %}
 
-    {% if current_user.is_authenticated %}
-        <h2>{{ current_user.name }}님, 환영합니다!</h2>
-        <p><a href="{{ url_for('logout') }}">로그아웃</a></p>
+{% block title %}Moodiary - 감정 일기 목록{% endblock %}
+
+{% block content %}
+  <h2>📘 Moodiary - 공개된 감정 일기들</h2>
+
+  {% if current_user.is_authenticated %}
+    <a href="{{ url_for('create_post') }}">[새 감정 기록하기]</a>
+    <!-- <a href="{{ url_for('my_posts') }}">[마이페이지]</a>
+    <a href="{{ url_for('logout') }}">[로그아웃]</a> -->
+  {% else %}
+    <p>감정을 기록하려면 로그인 해주세요</p>
+    <!-- <a href="{{ url_for('login') }}">[로그인]</a>
+    <a href="{{ url_for('register') }}">[회원가입]</a> -->
+  {% endif %}
+
+  <hr>
+
+  <ul>
+    {% for post in posts %}
+      <li>
+        <a href="{{ url_for('post_detail', post_id=post.id) }}">
+          {{ post.title if post.title else '[제목 없는 감정]' }}
+        </a>
+        <small> - {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      </li>
     {% else %}
-        <h2>로그인되지 않았습니다.</h2>
-        <p>
-            <a href="{{ url_for('login') }}">로그인</a> | 
-            <a href="{{ url_for('register') }}">회원가입</a>
-        </p>
-    {% endif %}
-    <hr>
-    {% if current_user.is_authenticated %}
-      <a href="{{ url_for('create_post') }}">[글 작성]</a>
-    {% endif %}
-    <ul>
-      {% for post in posts %}
-        <li>
-          <a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a>
-          <small> - {{ post.author.name }} | {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
-        </li>
-      {% else %}
-        <li>게시글이 없습니다.</li>
-      {% endfor %}
-    </ul>
-</body>
-</html>
+      <li>아직 공개된 감정이 없습니다.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

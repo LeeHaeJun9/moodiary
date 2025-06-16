@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}회원 정보 수정 - Moodiary{% endblock %}
+
+{% block content %}
+  <h2>🛠️ 회원 정보 수정</h2>
+  <a href="{{ url_for('my_posts') }}">[마이페이지]</a>
+  <hr>
+
+  <form method="post">
+    <label>이름:</label><br>
+    <input type="text" name="name" value="{{ current_user.name }}" required><br><br>
+
+    <label>이메일:</label><br>
+    <input type="email" name="email" value="{{ current_user.email }}" required><br><br>
+
+    <label>새 비밀번호 (선택):</label><br>
+    <input type="password" name="password"><br><br>
+
+    <label>새 비밀번호 확인:</label><br>
+    <input type="password" name="confirm_password"><br><br>
+
+    <button type="submit">정보 수정하기</button>
+  </form>
+{% endblock %}

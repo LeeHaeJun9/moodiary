@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Moodiary{% endblock %}</title>
+</head>
+<body>
+  <h1><a href="{{ url_for('index') }}">Moodiary</a></h1>
+
+  {% if current_user.is_authenticated %}
+    <p>안녕하세요, {{ current_user.name }}님 👋</p>
+    <a href="{{ url_for('my_posts') }}">[마이페이지]</a>
+    <a href="{{ url_for('logout') }}">[로그아웃]</a>
+  {% else %}
+    <a href="{{ url_for('login') }}">[로그인]</a>
+    <a href="{{ url_for('register') }}">[회원가입]</a>
+  {% endif %}
+
+  <hr>
+
+  <!-- ✅ flash 메시지는 여기서만 출력 -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul style="color: green;">
+        {% for msg in messages %}
+          <li>{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ✅ 각 템플릿의 내용이 들어오는 부분 -->
+  {% block content %}{% endblock %}
+</body>
+</html>

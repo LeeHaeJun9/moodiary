@@ -29,6 +29,16 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     author = db.relationship('User', backref=db.backref('posts', lazy=True))
 
+    is_public = db.Column(db.Boolean, default=True) # 공개 여부
+
+class Like(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+    user = db.relationship('User', backref='likes')
+    post = db.relationship('Post', backref='likes')
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
@@ -104,7 +114,8 @@ def create_post():
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
-        new_post = Post(title=title, content=content, author=current_user)
+        is_public = 'is_public' in request.form
+        new_post = Post(title=title, content=content, is_public=is_public, author=current_user)
         db.session.add(new_post)
         db.session.commit()
         flash('감정이 Moodiary에 기록되었습니다.')
@@ -120,14 +131,19 @@ def add_header(response):
 
 @app.route('/')
 def index():
-    posts = Post.query.order_by(Post.created_at.desc()).all()
+    posts = Post.query.filter_by(is_public=True).order_by(Post.created_at.desc()).all()
     return render_template('index.html', posts=posts)
 
 @app.route('/post/<int:post_id>', methods=['GET', 'POST'])
 def post_detail(post_id):
     post= Post.query.get_or_404(post_id)
 
-    # 수종 폼 제출 처리
+    # 비공개 글 보호 로직 (GET/POST 둘 다 적용)
+    if not post.is_public and (not current_user.is_authenticated or post.author != current_user):
+        flash('비공개 글입니다. 접근 권한이 없습니다.')
+        return redirect(url_for('index'))
+
+    # 수정 폼 제출 처리
     if request.method == 'POST':
         if not current_user.is_authenticated or post.author != current_user:
             flash('수정 권한이 없습니다.')
@@ -152,6 +168,54 @@ def delete_post(post_id):
     db.session.commit()
     flash('감정 기록이 삭제되었습니다.')
     return redirect(url_for('index'))
+
+@app.route('/my')
+@login_required
+def my_posts():
+    posts = Post.query.filter_by(author=current_user).order_by(Post.created_at.desc()).all()
+    return render_template('my_posts.html', posts=posts)
+
+@app.route('/my/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        password = request.form['password']
+        confirm = request.form['confirm_password']
+
+        current_user.name = name
+        current_user.email = email
+
+        if password:
+            if password != confirm:
+                flash('비밀번호가 일치하지 않습니다.')
+                return redirect(url_for('edit_profile'))
+            current_user.password = generate_password_hash(password)
+
+        db.session.commit()
+        flash('회원 정보가 수정되었습니다.')
+        return redirect(url_for('my_posts'))
+    
+    return render_template('edit_profile.html')
+
+@app.route('/like/<int:post_id>', methods=['POST'])
+@login_required
+def like(post_id):
+    post = Post.query.get_or_404(post_id)
+    existing_like = Like.query.filter_by(user_id=current_user.id, post_id=post.id).first()
+
+    if existing_like:
+        db.session.delete(existing_like)
+        db.session.commit()
+        flash('공감을 취소했습니다.')
+    else:
+        new_like = Like(user=current_user, post=post)
+        db.session.add(new_like)
+        db.session.commit()
+        flash('감정에 공감했습니다!')
+    
+    return redirect(url_for('post_detail', post_id=post.id))
 
 # ✅ 실행
 if __name__ == '__main__':

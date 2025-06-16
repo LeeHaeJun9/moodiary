@@ -1,0 +1,158 @@
+from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
+from flask import render_template, request, redirect, url_for, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+
+# 기존 코드가 있다면 생략 가능
+app = Flask(__name__, instance_relative_config=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+app.config['SECRET_KEY'] = 'your-secret-key'  # 로그인 세션용
+
+db = SQLAlchemy(app)
+
+# ✅ 사용자 모델 정의
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(80), unique=True, nullable=False)  # 로그인용 ID
+    name = db.Column(db.String(100), nullable=False)                 # 이름
+    phone = db.Column(db.String(20), nullable=False)                 # 전화번호
+    email = db.Column(db.String(120), unique=True, nullable=False)   # 이메일
+    password = db.Column(db.String(200), nullable=False)             # 암호화된 비밀번호
+
+class Post(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    author = db.relationship('User', backref=db.backref('posts', lazy=True))
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        user_id = request.form['user_id']
+        name = request.form['name']
+        phone = request.form['phone']
+        email = request.form['email']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        # 비밀번호 확인
+        if password != confirm_password:
+            flash('비밀번호가 일치하지 않습니다.')
+            return redirect(url_for('register'))
+
+        # 아이디 또는 이메일 중복 확인
+        if User.query.filter_by(user_id=user_id).first():
+            flash('이미 존재하는 아이디입니다.')
+            return redirect(url_for('register'))
+        if User.query.filter_by(email=email).first():
+            flash('이미 사용 중인 이메일입니다.')
+            return redirect(url_for('register'))
+
+        hashed_password = generate_password_hash(password)
+        new_user = User(
+            user_id=user_id,
+            name=name,
+            phone=phone,
+            email=email,
+            password=hashed_password
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        flash('회원가입이 완료되었습니다.')
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user_id = request.form['user_id']
+        password = request.form['password']
+
+        user = User.query.filter_by(user_id=user_id).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            flash('로그인에 성공했습니다.')
+            return redirect(url_for('index'))
+        else:
+            flash('아이디 또는 비밀번호가 잘못되었습니다.')
+            return redirect(url_for('login'))
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('로그아웃 되었습니다.')
+    return redirect(url_for('login'))
+
+@app.route('/create', methods=['GET', 'POST'])
+@login_required
+def create_post():
+    if request.method == 'POST':
+        title = request.form['title']
+        content = request.form['content']
+        new_post = Post(title=title, content=content, author=current_user)
+        db.session.add(new_post)
+        db.session.commit()
+        flash('감정이 Moodiary에 기록되었습니다.')
+        return redirect(url_for('index'))
+    return render_template('create_post.html')
+
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/')
+def index():
+    posts = Post.query.order_by(Post.created_at.desc()).all()
+    return render_template('index.html', posts=posts)
+
+@app.route('/post/<int:post_id>', methods=['GET', 'POST'])
+def post_detail(post_id):
+    post= Post.query.get_or_404(post_id)
+
+    # 수종 폼 제출 처리
+    if request.method == 'POST':
+        if not current_user.is_authenticated or post.author != current_user:
+            flash('수정 권한이 없습니다.')
+            return redirect(url_for('post_detail', post_id=post.id))
+        
+        post.title = request.form['title']
+        post.content = request.form['content']
+        db.session.commit()
+        flash('감정 기록이 수정되었습니다.')
+        return redirect(url_for('post_detail', post_id=post.id))
+    return render_template('post_detail.html', post=post)
+
+@app.route('/post/<int:post_id>/delete', methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        flash('삭제 권한이 없습니다.')
+        return redirect(url_for('post_detail', post_id=post_id))
+
+    db.session.delete(post)
+    db.session.commit()
+    flash('감정 기록이 삭제되었습니다.')
+    return redirect(url_for('index'))
+
+# ✅ 실행
+if __name__ == '__main__':
+    app.run(debug=True)

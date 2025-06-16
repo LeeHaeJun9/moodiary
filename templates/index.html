@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Moodiary - 감정 일기장</title>
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    {% if current_user.is_authenticated %}
+        <h2>{{ current_user.name }}님, 환영합니다!</h2>
+        <p><a href="{{ url_for('logout') }}">로그아웃</a></p>
+    {% else %}
+        <h2>로그인되지 않았습니다.</h2>
+        <p>
+            <a href="{{ url_for('login') }}">로그인</a> | 
+            <a href="{{ url_for('register') }}">회원가입</a>
+        </p>
+    {% endif %}
+    <hr>
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('create_post') }}">[글 작성]</a>
+    {% endif %}
+    <ul>
+      {% for post in posts %}
+        <li>
+          <a href="{{ url_for('post_detail', post_id=post.id) }}">{{ post.title }}</a>
+          <small> - {{ post.author.name }} | {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+        </li>
+      {% else %}
+        <li>게시글이 없습니다.</li>
+      {% endfor %}
+    </ul>
+</body>
+</html>

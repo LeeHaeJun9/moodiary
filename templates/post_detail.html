@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moodiary - 감정 일기장</title>
+</head>
+<body>
+  <h2>{{ post.title }}</h2>
+  <p>{{ post.content }}</p>
+  <p><small>작성자: {{ post.author.name }} | {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+  <hr>
+  {% if current_user.is_authenticated and current_user.id == post.author.id %}
+    <details>
+      <summary>[수정하기]</summary>
+      <form method="post">
+        <label>제목:</label><br>
+        <input type="text" name="title" value="{{ post.title }}" required><br><br>
+
+        <label>내용:</label><br>
+        <textarea name="content" rows="10" cols="50" required>{{ post.content }}</textarea><br><br>
+
+        <button type="submit">수정 완료</button>
+      </form>
+    </details>
+
+    <form method="post" action="{{ url_for('delete_post', post_id=post.id) }}" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+      <button type="submit" style="margin-top:10px;">삭제하기</button>
+    </form>
+  {% endif %}
+
+  <br>
+  <a href="{{ url_for('index') }}">[목록으로]</a>
+</body>
+</html>

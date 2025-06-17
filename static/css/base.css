@@ -1,0 +1,15 @@
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #fffaf4;
+  color: #333;
+  margin: 0;
+  padding: 20px;
+  line-height: 1.6;
+}
+a {
+  text-decoration: none;
+  color: #6e4b3c;
+}
+a:hover {
+  text-decoration: underline;
+}

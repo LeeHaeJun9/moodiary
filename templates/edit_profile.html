@@ -3,23 +3,24 @@
 {% block title %}회원 정보 수정 - Moodiary{% endblock %}
 
 {% block content %}
-  <h2>🛠️ 회원 정보 수정</h2>
-  <a href="{{ url_for('my_posts') }}">[마이페이지]</a>
-  <hr>
+  <section class="main-top">
+    <h2>🛠 회원 정보 수정</h2>
+    
+  </section>
 
-  <form method="post">
-    <label>이름:</label><br>
-    <input type="text" name="name" value="{{ current_user.name }}" required><br><br>
+  <form method="post" class="form-box">
+    <label for="name">이름:</label>
+    <input type="text" name="name" id="name" value="{{ current_user.name }}" required>
 
-    <label>이메일:</label><br>
-    <input type="email" name="email" value="{{ current_user.email }}" required><br><br>
+    <label for="email">이메일:</label>
+    <input type="email" name="email" id="email" value="{{ current_user.email }}" required>
 
-    <label>새 비밀번호 (선택):</label><br>
-    <input type="password" name="password"><br><br>
+    <label for="password">새 비밀번호 (선택):</label>
+    <input type="password" name="password" id="password" placeholder="변경하지 않으려면 비워두세요">
 
-    <label>새 비밀번호 확인:</label><br>
-    <input type="password" name="confirm_password"><br><br>
+    <label for="confirm_password">새 비밀번호 확인:</label>
+    <input type="password" name="confirm_password" id="confirm_password">
 
-    <button type="submit">정보 수정하기</button>
+    <button type="submit" class="primary-btn">정보 수정하기</button>
   </form>
 {% endblock %}

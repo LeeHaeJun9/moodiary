@@ -1,0 +1,98 @@
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.flash-messages {
+  background-color: #fff3cd;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 16px;
+  border: 1px solid #ffeeba;
+  color: #856404;
+}
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+header h1 {
+  margin: 0;
+  color: #5e4434;
+}
+
+header p {
+  margin: 5px 0;
+}
+
+.flash-messages {
+  background-color: #fff3cd;
+  padding: 10px 16px;
+  border-left: 5px solid #ffda7c;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  color: #856404;
+}
+
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.logo-area h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #5c4033;
+}
+
+.nav-area {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.95rem;
+  color: #5c4033;
+  background-color: #fdf7f0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  margin-left: 100px;
+}
+
+.greeting {
+  color: #666;
+  font-size: 0.93rem;
+}
+
+.greeting strong {
+  color: #333;
+}
+
+.nav-area a {
+  text-decoration: none;
+  color: #5c4033;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.nav-area a:hover {
+  background-color: #f0e3d1;
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logo-img {
+  height: 250px;   /* 기존보다 크게 */
+  width: auto;
+  display: block;
+}
+
+

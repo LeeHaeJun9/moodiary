@@ -3,15 +3,16 @@
 {% block title %}Moodiary - 로그인{% endblock %}
 
 {% block content %}
-  <h2>Moodiary - 로그인</h2>
+  <div class="form-container">
+    <h2>🔐 Moodiary - 로그인</h2>
+    <form method="post">
+      <label for="user_id">아이디:</label>
+      <input type="text" id="user_id" name="user_id" required>
 
-  <form method="post">
-    <label>아이디:</label>
-    <input type="text" name="user_id" required><br><br>
+      <label for="password">비밀번호:</label>
+      <input type="password" id="password" name="password" required>
 
-    <label>비밀번호:</label>
-    <input type="password" name="password" required><br><br>
-
-    <button type="submit">로그인</button>
-  </form>
+      <button type="submit" class="primary-btn">로그인</button>
+    </form>
+  </div>
 {% endblock %}

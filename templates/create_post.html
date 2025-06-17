@@ -3,22 +3,24 @@
 {% block title %}Moodiary - 감정 기록{% endblock %}
 
 {% block content %}
+  
   <h2>오늘의 감정을 기록해보세요</h2>
 
-  <form method="post">
-    <label>오늘의 감정 한 줄 (선택)</label><br>
-    <input type="text" name="title" placeholder="예: 괜찮은 하루였어"><br><br>
+  <div class="create_box">
+    <form method="post">
+      <label>오늘의 감정 한 줄 (선택)</label><br>
+      <input type="text" name="title" placeholder="예: 괜찮은 하루였어"><br><br>
 
-    <label>감정 내용</label><br>
-    <textarea name="content" rows="10" cols="50" required placeholder="지금 기분이나 있었던 일을 자유롭게 적어보세요."></textarea><br><br>
+      <label>감정 내용</label><br>
+      <textarea name="content" rows="10" cols="50" required placeholder="지금 기분이나 있었던 일을 자유롭게 적어보세요."></textarea><br><br>
 
-    <label>
-      <input type="checkbox" name="is_public" checked>
-      이 감정을 다른 사람에게 공개합니다
-    </label><br><br>
+      <div class="pretty-checkbox">
+        <input type="checkbox" id="is_public" name="is_public" checked>
+        <label for="is_public">이 감정을 다른 사람에게 공개합니다</label>
+      </div>
 
-    <button type="submit">기록하기</button>
-  </form>
+      <button type="submit" class="primary-btn">기록하기</button>
+    </form><br>
+  </div>
 
-  <a href="{{ url_for('index') }}">[뒤로가기]</a>
 {% endblock %}

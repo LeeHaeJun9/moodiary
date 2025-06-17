@@ -3,33 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <title>{% block title %}Moodiary{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/buttons.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/post.css') }}">
+  {% block extra_css %}{% endblock %}
 </head>
 <body>
-  <h1><a href="{{ url_for('index') }}">Moodiary</a></h1>
+  <header>
+    <div class="container header-bar">
+      <!-- 왼쪽: 로고만 -->
+      <a href="{{ url_for('index') }}" class="logo-area">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Moodiary 로고" class="logo-img">
+      </a>
+      <!-- 오른쪽: 인사말 + 링크들 -->
+      <div class="nav-area">
+        {% if current_user.is_authenticated %}
+          <span class="greeting">안녕하세요, {{ current_user.name }}님 👋</span>
+          <a href="{{ url_for('my_posts') }}">[마이페이지]</a>
+          <a href="{{ url_for('logout') }}">[로그아웃]</a>
+        {% else %}
+          <a href="{{ url_for('login') }}">[로그인]</a>
+          <a href="{{ url_for('register') }}">[회원가입]</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
 
-  {% if current_user.is_authenticated %}
-    <p>안녕하세요, {{ current_user.name }}님 👋</p>
-    <a href="{{ url_for('my_posts') }}">[마이페이지]</a>
-    <a href="{{ url_for('logout') }}">[로그아웃]</a>
-  {% else %}
-    <a href="{{ url_for('login') }}">[로그인]</a>
-    <a href="{{ url_for('register') }}">[회원가입]</a>
-  {% endif %}
 
-  <hr>
+  <main>
+    <div class="container">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash-messages">
+            {% for msg in messages %}
+              <p>{{ msg }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
 
-  <!-- ✅ flash 메시지는 여기서만 출력 -->
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <ul style="color: green;">
-        {% for msg in messages %}
-          <li>{{ msg }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-  {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
 
-  <!-- ✅ 각 템플릿의 내용이 들어오는 부분 -->
-  {% block content %}{% endblock %}
+  <footer>
+    <p style="text-align:center; color: #aaa; font-size: 0.9rem;">© 2025 Moodiary</p>
+  </footer>
+
 </body>
 </html>

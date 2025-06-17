@@ -3,53 +3,92 @@
 {% block title %}{{ post.title if post.title else '감정 일기' }} - Moodiary{% endblock %}
 
 {% block content %}
-  <h2>{{ post.title if post.title else '[제목 없는 감정]' }}</h2>
+  <article class="post-detail">
+    <h2>{{ post.title if post.title else '[제목 없는 감정]' }}</h2>
 
-  <p>{{ post.content }}</p>
-  <p><small>작성자: {{ post.author.name }} | {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</small></p>
+    <p class="post-content">{{ post.content }}</p>
+    <p class="post-meta">
+      작성자: <strong>{{ post.author.name }}</strong> |
+      {{ post.created_at|format_kst }}
+    </p>
+    <div class="likes">
+      ❤️ 공감 <span>{{ post.likes | length }}개</span>
+    </div>
 
-  <p>❤️ 공감 {{ post.likes | length }}개</p>
+    {% if current_user.is_authenticated %}
+      {% set liked = false %}
+      {% for like in post.likes %}
+        {% if like.user.id == current_user.id %}
+          {% set liked = true %}
+        {% endif %}
+      {% endfor %}
 
-  {% if current_user.is_authenticated %}
-    {% set liked = false %}
-    {% for like in post.likes %}
-      {% if like.user.id == current_user.id %}
-        {% set liked = true %}
-      {% endif %}
+      <form action="{{ url_for('like', post_id=post.id) }}" method="post">
+        <button type="submit" >
+          {% if liked %}
+            공감 취소하기
+          {% else %}
+            공감하기
+          {% endif %}
+        </button>
+      </form>
+    {% endif %}
+
+    {% if current_user.is_authenticated and current_user.id == post.author.id %}
+      <form method="post" action="{{ url_for('delete_post', post_id=post.id) }}" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+        <button type="submit" >삭제하기</button>
+      </form>
+      <details class="edit-box">
+        <summary>✏️ 수정하기</summary>
+        <form method="post">
+          <label>제목:</label>
+          <input type="text" name="title" value="{{ post.title }}" required>
+
+          <label>내용:</label>
+          <textarea name="content" rows="6" required>{{ post.content }}</textarea>
+
+          <button type="submit" >수정 완료</button>
+        </form>
+      </details>
+
+    {% endif %}
+  </article>
+
+  <section class="comments">
+    <h3>💬 댓글</h3>
+    {% for comment in post.comments %}
+      <div class="comment-box">
+        <p class="comment-meta">
+          <strong>{{ comment.user.name }}</strong> ({{ comment.created_at|format_kst }}):
+        </p>
+        <p>{{ comment.content }}</p>
+
+        {% if current_user.is_authenticated and current_user.id == comment.user_id %}
+          <form method="post" action="{{ url_for('delete_comment', comment_id=comment.id) }}" style="display:inline-block;">
+            <button type="submit" >삭제</button>
+          </form>
+          <details class="edit-comment">
+            <summary>✏️ 수정하기</summary>
+            <form method="post" action="{{ url_for('edit_comment', comment_id=comment.id) }}">
+              <textarea name="content" rows="2" required>{{ comment.content }}</textarea>
+              <button type="submit" >수정 완료</button>
+            </form>
+          </details>
+        {% endif %}
+      </div>
+    {% else %}
+      <p class="no-comment">아직 댓글이 없습니다.</p>
     {% endfor %}
 
-    <form action="{{ url_for('like', post_id=post.id) }}" method="post">
-      <button type="submit">
-        {% if liked %}
-          공감 취소하기
-        {% else %}
-          공감하기
-        {% endif %}
-      </button>
-    </form>
-  {% endif %}
-
-  <hr>
-
-  {% if current_user.is_authenticated and current_user.id == post.author.id %}
-    <details>
-      <summary>[수정하기]</summary>
-      <form method="post">
-        <label>제목:</label><br>
-        <input type="text" name="title" value="{{ post.title }}" required><br><br>
-
-        <label>내용:</label><br>
-        <textarea name="content" rows="10" cols="50" required>{{ post.content }}</textarea><br><br>
-
-        <button type="submit">수정 완료</button>
+    {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('add_comment', post_id=post.id) }}" class="comment-form">
+        <textarea name="content" rows="3" placeholder="댓글을 입력하세요." required></textarea>
+        <button type="submit" >댓글 작성</button>
       </form>
-    </details>
+    {% else %}
+      <p class="notice">댓글을 작성하려면 <a href="{{ url_for('login') }}">로그인</a> 해주세요.</p>
+    {% endif %}
+  </section>
 
-    <form method="post" action="{{ url_for('delete_post', post_id=post.id) }}" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-      <button type="submit" style="margin-top:10px;">삭제하기</button>
-    </form>
-  {% endif %}
-
-  <br>
-  <a href="{{ url_for('index') }}">[목록으로]</a>
+  
 {% endblock %}

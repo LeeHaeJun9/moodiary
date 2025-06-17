@@ -1,0 +1,10 @@
+.main-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.notice {
+  color: #777;
+  font-style: italic;
+}

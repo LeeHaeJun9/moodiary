@@ -3,6 +3,8 @@ from flask import Flask
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask import render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+from pytz import timezone
 
 # 기존 코드가 있다면 생략 가능
 app = Flask(__name__, instance_relative_config=True)
@@ -24,7 +26,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone('Asia/Seoul')))
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     author = db.relationship('User', backref=db.backref('posts', lazy=True))
@@ -39,9 +41,27 @@ class Like(db.Model):
     user = db.relationship('User', backref='likes')
     post = db.relationship('Post', backref='likes')
 
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone('Asia/Seoul')))
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+    user = db.relationship('User', backref='comments')
+    post = db.relationship('Post', backref='comments')
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+@app.template_filter('format_kst')
+def format_kst(value):
+    try:
+        return value.astimezone(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M')
+    except Exception:
+        return value  # 혹시나 None 등 오류 방지
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -216,6 +236,45 @@ def like(post_id):
         flash('감정에 공감했습니다!')
     
     return redirect(url_for('post_detail', post_id=post.id))
+
+@app.route('/comment/<int:post_id>', methods=['POST'])
+@login_required
+def add_comment(post_id):
+    content = request.form['content']
+    post = Post.query.get_or_404(post_id)
+
+    new_comment = Comment(content=content, user=current_user, post=post)
+    db.session.add(new_comment)
+    db.session.commit()
+    flash('댓글이 등록되었습니다.')
+    return redirect(url_for('post_detail', post_id=post.id))
+
+@app.route('/comment/<int:comment_id>/delete', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.user != current_user:
+        flash('삭제 권한이 없습니다.')
+        return redirect(url_for('post_detail', post_id=comment.post_id))
+    
+    post_id = comment.post_id
+    db.session.delete(comment)
+    db.session.commit()
+    flash('댓글이 삭제되었습니다.')
+    return redirect(url_for('post_detail', post_id=post_id))
+
+@app.route('/comment/<int:comment_id>/edit', methods=['POST'])
+@login_required
+def edit_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.user != current_user:
+        flash('수정 권한이 없습니다.')
+        return redirect(url_for('post_detail', post_id=comment.post.id))
+    
+    comment.content = request.form['content']
+    db.session.commit()
+    flash('댓글이 수정되었습니다.')
+    return redirect(url_for('post_detail', post_id=comment.post.id))
 
 # ✅ 실행
 if __name__ == '__main__':

@@ -151,11 +151,18 @@ def add_header(response):
 
 @app.route('/')
 def index():
-    page = request.args.get('page', 1, type=int)  # 기본값: 1
-    per_page = 5  # 페이지당 글 개수
-    posts = Post.query.filter_by(is_public=True)\
-                      .order_by(Post.created_at.desc())\
-                      .paginate(page=page, per_page=per_page)
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    keyword = request.args.get('q', '', type=str).strip()
+
+    query = Post.query.filter_by(is_public=True)
+
+    if keyword:
+        search = f"%{keyword}%"
+        query = query.filter(Post.title.ilike(search) | Post.content.ilike(search))
+
+    posts = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=per_page)
+
     return render_template('index.html', posts=posts)
     
 

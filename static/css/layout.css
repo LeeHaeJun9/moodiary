@@ -86,10 +86,11 @@ header p {
   align-items: center;
   gap: 12px;
   text-decoration: none;
+  margin-top: 10px;
 }
 
 .logo-img {
-  height: 250px;   /* 기존보다 크게 */
+  height: 100px;   /* 기존보다 크게 */
   width: auto;
   display: block;
 }

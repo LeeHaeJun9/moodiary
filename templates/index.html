@@ -3,6 +3,18 @@
 {% block title %}Moodiary - 감정 일기 목록{% endblock %}
 
 {% block content %}
+  <form action="{{ url_for('index') }}" method="get" class="search-form">
+    <input type="text" name="q" placeholder="감정을 검색해보세요" value="{{ request.args.get('q', '') }}">
+    <button type="submit">검색</button>
+  </form>
+  {% if not posts.items %}
+    {% if request.args.get('q') %}
+      <p class="no-post">"{{ request.args.get('q') }}"에 대한 결과가 없습니다.</p>
+    {% else %}
+      <p class="no-post">아직 공개된 감정이 없습니다.</p>
+    {% endif %}
+  {% endif %}
+
   <section class="main-top">
     <h2>📘 공개된 감정 일기들</h2>
     {% if current_user.is_authenticated %}

@@ -151,8 +151,13 @@ def add_header(response):
 
 @app.route('/')
 def index():
-    posts = Post.query.filter_by(is_public=True).order_by(Post.created_at.desc()).all()
+    page = request.args.get('page', 1, type=int)  # 기본값: 1
+    per_page = 5  # 페이지당 글 개수
+    posts = Post.query.filter_by(is_public=True)\
+                      .order_by(Post.created_at.desc())\
+                      .paginate(page=page, per_page=per_page)
     return render_template('index.html', posts=posts)
+    
 
 @app.route('/post/<int:post_id>', methods=['GET', 'POST'])
 def post_detail(post_id):
@@ -162,6 +167,12 @@ def post_detail(post_id):
     if not post.is_public and (not current_user.is_authenticated or post.author != current_user):
         flash('비공개 글입니다. 접근 권한이 없습니다.')
         return redirect(url_for('index'))
+    
+    # 댓글 페이징 처리
+    page = request.args.get('page', 1, type=int)
+    per_page = 3
+    comments = Comment.query.filter_by(post_id=post.id).order_by(Comment.created_at.asc()).paginate(page=page, per_page=per_page)
+
 
     # 수정 폼 제출 처리
     if request.method == 'POST':
@@ -174,7 +185,7 @@ def post_detail(post_id):
         db.session.commit()
         flash('감정 기록이 수정되었습니다.')
         return redirect(url_for('post_detail', post_id=post.id))
-    return render_template('post_detail.html', post=post)
+    return render_template('post_detail.html', post=post, comments=comments)
 
 @app.route('/post/<int:post_id>/delete', methods=['POST'])
 @login_required
@@ -192,8 +203,13 @@ def delete_post(post_id):
 @app.route('/my')
 @login_required
 def my_posts():
-    posts = Post.query.filter_by(author=current_user).order_by(Post.created_at.desc()).all()
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    posts = Post.query.filter_by(author=current_user)\
+                      .order_by(Post.created_at.desc())\
+                      .paginate(page=page, per_page=per_page)
     return render_template('my_posts.html', posts=posts)
+    
 
 @app.route('/my/edit', methods=['GET', 'POST'])
 @login_required
@@ -255,7 +271,7 @@ def delete_comment(comment_id):
     comment = Comment.query.get_or_404(comment_id)
     if comment.user != current_user:
         flash('삭제 권한이 없습니다.')
-        return redirect(url_for('post_detail', post_id=comment.post_id))
+        return redirect(url_for('post_detail', post_id=comment.post_id, page=request.args.get('page', 1)))
     
     post_id = comment.post_id
     db.session.delete(comment)

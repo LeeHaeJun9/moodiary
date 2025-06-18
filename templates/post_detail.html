@@ -59,7 +59,7 @@
 
   <section class="comments">
     <h3>💬 댓글</h3>
-    {% for comment in post.comments %}
+    {% for comment in comments.items %}
       <div class="comment-box">
         <p class="comment-meta">
           <strong>{{ comment.user.name }}</strong> ({{ comment.created_at|format_kst }}):
@@ -88,6 +88,20 @@
       <p class="no-comment">아직 댓글이 없습니다.</p>
     {% endfor %}
 
+    <div class="pagination">
+      {% if comments.has_prev %}
+        <a href="{{ url_for('post_detail', post_id=post.id, page=comments.prev_num) }}">« 이전</a>
+      {% endif %}
+
+      {% for p in range(1, comments.pages + 1) %}
+        <a href="{{ url_for('post_detail', post_id=post.id, page=p) }}" {% if p == comments.page %}class="active"{% endif %}>{{ p }}</a>
+      {% endfor %}
+
+      {% if comments.has_next %}
+        <a href="{{ url_for('post_detail', post_id=post.id, page=comments.next_num) }}">다음 »</a>
+      {% endif %}
+    </div>
+
     {% if current_user.is_authenticated %}
       <form method="post" action="{{ url_for('add_comment', post_id=post.id) }}" class="comment-form">
         <textarea name="content" rows="3" placeholder="댓글을 입력하세요." required></textarea>
@@ -96,6 +110,7 @@
     {% else %}
       <p class="notice">댓글을 작성하려면 <a href="{{ url_for('login') }}">로그인</a> 해주세요.</p>
     {% endif %}
+
   </section>
 
   

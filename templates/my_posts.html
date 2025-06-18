@@ -24,4 +24,17 @@
       <p class="no-post">작성한 감정 기록이 없습니다.</p>
     {% endfor %}
   </section>
+  <div class="pagination">
+    {% if posts.has_prev %}
+      <a href="{{ url_for('my_posts', page=posts.prev_num) }}">« 이전</a>
+    {% endif %}
+
+    {% for p in range(1, posts.pages + 1) %}
+      <a href="{{ url_for('my_posts', page=p) }}" {% if p == posts.page %}class="active"{% endif %}>{{ p }}</a>
+    {% endfor %}
+
+    {% if posts.has_next %}
+      <a href="{{ url_for('my_posts', page=posts.next_num) }}">다음 »</a>
+    {% endif %}
+  </div>
 {% endblock %}

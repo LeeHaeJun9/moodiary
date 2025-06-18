@@ -107,3 +107,21 @@ form button:hover {
   margin-top: 80px;
 }
 
+.pagination {
+  margin-top: 80px;
+  text-align: center;
+}
+
+.pagination a {
+  margin: 0 6px;
+  text-decoration: none;
+  color: #5c4033;
+  font-weight: bold;
+}
+
+.pagination a.active {
+  color: white;
+  background-color: #d9a66b;
+  padding: 4px 8px;
+  border-radius: 5px;
+}

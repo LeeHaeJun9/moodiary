@@ -41,6 +41,7 @@ header p {
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
+  width: 770px;
 }
 
 .logo-area h1 {
@@ -55,10 +56,8 @@ header p {
   gap: 16px;
   font-size: 0.95rem;
   color: #5c4033;
-  background-color: #fdf7f0;
   padding: 6px 14px;
   border-radius: 8px;
-  margin-left: 100px;
 }
 
 .greeting {

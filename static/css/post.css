@@ -27,7 +27,7 @@
   padding: 20px 50px;
   border-radius: 8px;
   border: 1px solid #eaded2;
-  background-color: #fff4e8
+  background-color: #fefcf9;
 }
 
 .post-detail h2 {
@@ -89,8 +89,8 @@ form button:hover {
   padding: 20px 50px;
   border-radius: 8px;
   border: 1px solid #eaded2;
-  background-color: #fff4e8;
-  margin-bottom: 30px;
+  background-color: #fefcf9;
+  margin-top: 30px;
 }
 
 .comment-box .meta {
@@ -103,5 +103,7 @@ form button:hover {
   margin-top: 6px;
 }
 
-
+.comment-form {
+  margin-top: 80px;
+}
 

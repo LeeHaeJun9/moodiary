@@ -14,9 +14,10 @@ textarea {
 
 .create_box {
   padding: 20px 85px;
+  padding-top: 50px;
   border-radius: 8px;
   border: 1px solid #eaded2;
-  background-color: #fff4e8
+  background-color: #fefcf9;
 }
 .pretty-checkbox {
   display: flex;

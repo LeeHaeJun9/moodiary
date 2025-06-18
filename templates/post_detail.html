@@ -15,29 +15,7 @@
       ❤️ 공감 <span>{{ post.likes | length }}개</span>
     </div>
 
-    {% if current_user.is_authenticated %}
-      {% set liked = false %}
-      {% for like in post.likes %}
-        {% if like.user.id == current_user.id %}
-          {% set liked = true %}
-        {% endif %}
-      {% endfor %}
-
-      <form action="{{ url_for('like', post_id=post.id) }}" method="post">
-        <button type="submit" >
-          {% if liked %}
-            공감 취소하기
-          {% else %}
-            공감하기
-          {% endif %}
-        </button>
-      </form>
-    {% endif %}
-
     {% if current_user.is_authenticated and current_user.id == post.author.id %}
-      <form method="post" action="{{ url_for('delete_post', post_id=post.id) }}" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-        <button type="submit" >삭제하기</button>
-      </form>
       <details class="edit-box">
         <summary>✏️ 수정하기</summary>
         <form method="post">
@@ -50,9 +28,34 @@
           <button type="submit" >수정 완료</button>
         </form>
       </details>
-
     {% endif %}
   </article>
+  <div style="display: flex; gap: 10px;">
+    {% if current_user.is_authenticated %}
+      {% set liked = false %}
+      {% for like in post.likes %}
+        {% if like.user.id == current_user.id %}
+          {% set liked = true %}
+        {% endif %}
+      {% endfor %}
+
+      <form action="{{ url_for('like', post_id=post.id) }}" method="post">
+        <button type="submit">
+          {% if liked %}
+            공감 취소하기
+          {% else %}
+            공감하기
+          {% endif %}
+        </button>
+      </form>
+
+      {% if current_user.is_authenticated and current_user.id == post.author.id %}
+        <form method="post" action="{{ url_for('delete_post', post_id=post.id) }}" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+          <button type="submit">삭제하기</button>
+        </form>
+      {% endif %}
+    {% endif %}
+  </div>
 
   <section class="comments">
     <h3>💬 댓글</h3>
@@ -64,9 +67,9 @@
         <p>{{ comment.content }}</p>
 
         {% if current_user.is_authenticated and current_user.id == comment.user_id %}
-          <form method="post" action="{{ url_for('delete_comment', comment_id=comment.id) }}" style="display:inline-block;">
-            <button type="submit" >삭제</button>
-          </form>
+          <!-- <form method="post" action="{{ url_for('delete_comment', comment_id=comment.id) }}" style="display:inline-block;">
+            <button type="submit" >삭제하기</button>
+          </form> -->
           <details class="edit-comment">
             <summary>✏️ 수정하기</summary>
             <form method="post" action="{{ url_for('edit_comment', comment_id=comment.id) }}">
@@ -76,6 +79,11 @@
           </details>
         {% endif %}
       </div>
+      {% if current_user.is_authenticated and current_user.id == comment.user_id %}
+        <form method="post" action="{{ url_for('delete_comment', comment_id=comment.id) }}" style="display:inline-block;">
+          <button type="submit" >삭제하기</button>
+        </form>
+      {% endif %}
     {% else %}
       <p class="no-comment">아직 댓글이 없습니다.</p>
     {% endfor %}

@@ -34,6 +34,8 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 flask run
 
+---
+
 ## 📂 프로젝트 구조
 moodiary.py          # Flask 메인 애플리케이션
 templates/           # HTML 템플릿 폴더

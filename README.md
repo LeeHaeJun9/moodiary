@@ -33,6 +33,3 @@ python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 flask run
-
-![image](https://github.com/user-attachments/assets/8d6aae23-f488-45b9-b774-7571f5002c8d)
-![image](https://github.com/user-attachments/assets/8d6aae23-f488-45b9-b774-7571f5002c8d)

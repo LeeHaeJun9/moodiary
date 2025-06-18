@@ -24,6 +24,14 @@
 
 ---
 
+## 📂 프로젝트 구조
+moodiary.py          # Flask 메인 애플리케이션
+templates/           # HTML 템플릿 폴더
+static/css/          # CSS 스타일 시트
+instance/site.db     # SQLite 데이터베이스
+
+---
+
 ## 🚀 실행 방법
 
 ```bash
@@ -34,10 +42,3 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 flask run
 
----
-
-## 📂 프로젝트 구조
-moodiary.py          # Flask 메인 애플리케이션
-templates/           # HTML 템플릿 폴더
-static/css/          # CSS 스타일 시트
-instance/site.db     # SQLite 데이터베이스

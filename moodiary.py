@@ -1,10 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, jsonify, Flask
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from pytz import timezone
+from emotion_analyzer import analyze_emotion
+from sqlalchemy import func
 
 # 기존 코드가 있다면 생략 가능
 app = Flask(__name__, instance_relative_config=True)
@@ -32,6 +33,8 @@ class Post(db.Model):
     author = db.relationship('User', backref=db.backref('posts', lazy=True))
 
     is_public = db.Column(db.Boolean, default=True) # 공개 여부
+
+    emotion = db.Column(db.String(50), nullable=True)
 
 class Like(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -135,10 +138,14 @@ def create_post():
         title = request.form['title']
         content = request.form['content']
         is_public = 'is_public' in request.form
-        new_post = Post(title=title, content=content, is_public=is_public, author=current_user)
+
+        emotion = analyze_emotion(content)
+        print("🎯 분석된 감정:", emotion)
+
+        new_post = Post(title=title, content=content, is_public=is_public, author=current_user, emotion=emotion)
         db.session.add(new_post)
         db.session.commit()
-        flash('감정이 Moodiary에 기록되었습니다.')
+        flash(f'감정이 분석되어 "{emotion}"으로 저장되었습니다.')
         return redirect(url_for('index'))
     return render_template('create_post.html')
 
@@ -298,6 +305,56 @@ def edit_comment(comment_id):
     db.session.commit()
     flash('댓글이 수정되었습니다.')
     return redirect(url_for('post_detail', post_id=comment.post.id))
+
+@app.route('/autocomplete')
+def autocomplete():
+    query = request.args.get('q', '').strip()
+
+    if not query:
+        return jsonify([])
+
+    matches = Post.query.filter(Post.title.ilike(f'%{query}%')) \
+                        .order_by(Post.created_at.desc()) \
+                        .limit(5).all()
+
+    suggestions = [post.title for post in matches]
+    return jsonify(suggestions)
+
+@app.context_processor
+def inject_suggestions():
+    return {
+        'suggested_keywords': ['행복', '우울', '불안', '감사', '설렘', '지침']
+    }
+
+@app.route('/stats_data')
+@login_required
+def stats_data():
+
+    results = db.session.query(
+        func.strftime('%Y-%m-%d', Post.created_at).label('day'),
+        Post.emotion,
+        func.count(Post.id)
+    ).filter(
+        Post.user_id == current_user.id
+    ).group_by(
+        'day', Post.emotion
+    ).order_by(
+        'day'
+    ).all()
+
+    data = {}
+    for day, emotion, count in results:
+        if day not in data:
+            data[day] = {}
+        data[day][emotion] = count
+
+    return jsonify(data)
+
+@app.route('/stats')
+@login_required
+def stats():
+    return render_template('stats.html')
+
 
 # ✅ 실행
 if __name__ == '__main__':

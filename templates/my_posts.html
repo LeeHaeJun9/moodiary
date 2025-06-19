@@ -5,8 +5,9 @@
 {% block content %}
   <section class="main-top">
     <h2>📓 나의 감정 기록들</h2>
-    <a class="primary-btn" href="{{ url_for('create_post') }}">+ 새 감정 기록</a>
+    <!-- <a class="primary-btn" href="{{ url_for('create_post') }}">새 감정 기록하기</a> -->
     <a class="primary-btn" href="{{ url_for('edit_profile') }}">회원 정보 수정</a>
+    <a class="primary-btn" href="{{ url_for('stats') }}">감정 분석</a>
   </section>
 
   <section class="post-list">

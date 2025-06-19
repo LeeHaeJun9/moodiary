@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}내 감정 통계{% endblock %}
+
+{% block content %}
+<h2>내 감정 변화 그래프</h2>
+<canvas id="emotionChart" width="800" height="400"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+fetch('/stats_data')
+  .then(response => response.json())
+  .then(data => {
+    const days = Object.keys(data).sort();
+    const emotions = ['기쁨', '슬픔', '분노', '불안']; // 필요하면 동적으로도 가능
+
+    // 감정별 월별 데이터 배열 생성
+    const datasets = emotions.map((emotion, idx) => {
+      return {
+        label: emotion,
+        data: days.map(day => data[day][emotion] || 0),
+        borderColor: ['#4caf50', '#2196f3', '#f44336', '#ff9800'][idx],
+        fill: false,
+      };
+    });
+
+    const ctx = document.getElementById('emotionChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: '일별 감정 기록 수'
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

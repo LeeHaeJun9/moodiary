@@ -3,6 +3,9 @@
 {% block title %}{{ post.title if post.title else '감정 일기' }} - Moodiary{% endblock %}
 
 {% block content %}
+  {% if post.emotion %}
+    <p class="post-emotion">🧠 감정 분석 결과: {{ post.emotion }}</p>
+  {% endif %}
   <article class="post-detail">
     <h2>{{ post.title if post.title else '[제목 없는 감정]' }}</h2>
 

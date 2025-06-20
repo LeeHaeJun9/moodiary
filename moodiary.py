@@ -131,23 +131,53 @@ def logout():
     flash('로그아웃 되었습니다.')
     return redirect(url_for('login'))
 
-@app.route('/create', methods=['GET', 'POST'])
+## @app.route('/create', methods=['GET', 'POST'])
+##@login_required
+##def create_post():
+##    if request.method == 'POST':
+##        title = request.form['title']
+##        content = request.form['content']
+##        is_public = 'is_public' in request.form
+##        emotion = analyze_emotion(content)
+##      new_post = Post(title=title, content=content, is_public=is_public, author=current_user, emotion=emotion)
+##    db.session.add(new_post)
+##  db.session.commit()
+##flash(f'감정이 분석되어 "{emotion}"으로 저장되었습니다.')
+##        return redirect(url_for('index'))
+##  return render_template('create_post.html')
+
+@app.route('/create', methods=['GET'])
 @login_required
 def create_post():
-    if request.method == 'POST':
-        title = request.form['title']
-        content = request.form['content']
-        is_public = 'is_public' in request.form
-
-        emotion = analyze_emotion(content)
-        print("🎯 분석된 감정:", emotion)
-
-        new_post = Post(title=title, content=content, is_public=is_public, author=current_user, emotion=emotion)
-        db.session.add(new_post)
-        db.session.commit()
-        flash(f'감정이 분석되어 "{emotion}"으로 저장되었습니다.')
-        return redirect(url_for('index'))
     return render_template('create_post.html')
+
+@app.route('/analyze_emotion', methods=['POST'])
+@login_required
+def analyze_emotion_route():
+    content = request.form['content']
+    emotion = analyze_emotion(content)
+    return jsonify({'emotion': emotion})
+
+@app.route('/submit_selected_emotion', methods=['POST'])
+@login_required
+def submit_selected_emotion():
+    title = request.form['title']
+    content = request.form['content']
+    is_public = 'is_public' in request.form
+    emotion = request.form['manual_emotion']
+
+    new_post = Post(
+        title=title,
+        content=content,
+        is_public=is_public,
+        author=current_user,
+        emotion=emotion
+    )
+    db.session.add(new_post)
+    db.session.commit()
+    flash(f'감정이 "{emotion}"으로 저장되었습니다.')
+    return redirect(url_for('index'))
+
 
 @app.after_request
 def add_header(response):

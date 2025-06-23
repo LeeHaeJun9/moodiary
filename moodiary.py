@@ -196,7 +196,11 @@ def index():
 
     if keyword:
         search = f"%{keyword}%"
-        query = query.filter(Post.title.ilike(search) | Post.content.ilike(search))
+        query = query = query.filter(
+        Post.title.ilike(search) |
+        Post.content.ilike(search) |
+        Post.emotion.ilike(search)
+    )
 
     posts = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=per_page)
 
@@ -249,10 +253,21 @@ def delete_post(post_id):
 def my_posts():
     page = request.args.get('page', 1, type=int)
     per_page = 5
-    posts = Post.query.filter_by(author=current_user)\
-                      .order_by(Post.created_at.desc())\
-                      .paginate(page=page, per_page=per_page)
+    keyword = request.args.get('q', '', type=str).strip()
+
+    query = Post.query.filter_by(author=current_user)
+
+    if keyword:
+        search = f"%{keyword}%"
+        query = query = query.filter(
+        Post.title.ilike(search) |
+        Post.content.ilike(search) |
+        Post.emotion.ilike(search)
+    )
+        
+    posts = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=per_page)
     return render_template('my_posts.html', posts=posts)
+
     
 
 @app.route('/my/edit', methods=['GET', 'POST'])
@@ -343,17 +358,19 @@ def autocomplete():
     if not query:
         return jsonify([])
 
-    matches = Post.query.filter(Post.title.ilike(f'%{query}%')) \
-                        .order_by(Post.created_at.desc()) \
-                        .limit(5).all()
+    matches = Post.query.filter(
+        Post.title.ilike(f'%{query}%') |
+        Post.content.ilike(f'%{query}%') |
+        Post.emotion.ilike(f'%{query}%')
+    ).order_by(Post.created_at.desc()).limit(5).all()
 
-    suggestions = [post.title for post in matches]
+    suggestions = list({post.title for post in matches if post.title})  # 중복 제거
     return jsonify(suggestions)
 
 @app.context_processor
 def inject_suggestions():
     return {
-        'suggested_keywords': ['행복', '우울', '불안', '감사', '설렘', '지침']
+        'suggested_keywords': ['기쁨', '슬픔', '불안', '감사', '분노', '지침']
     }
 
 @app.route('/stats_data')
@@ -380,10 +397,23 @@ def stats_data():
 
     return jsonify(data)
 
-@app.route('/stats')
+# @app.route('/stats')
+# @login_required
+# def stats():
+#     return render_template('stats.html')
+
+@app.route('/report')
 @login_required
-def stats():
-    return render_template('stats.html')
+def report():
+    posts = Post.query.filter_by(user_id=current_user.id).all()
+    emotion_counts = {'기쁨': 0, '슬픔': 0, '분노': 0, '불안': 0, '중립': 0}
+    for post in posts:
+        emotion = post.emotion if post.emotion else '중립'
+        if emotion in emotion_counts:
+            emotion_counts[emotion] += 1
+        else:
+            emotion_counts['중립'] += 1
+    return render_template('report.html', emotion_counts=emotion_counts)
 
 
 # ✅ 실행

@@ -237,3 +237,35 @@ form button:hover {
   font-weight: bold;
   color: #5c4033;
 }
+
+.emotion-badge {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.6em;
+  font-weight: bold;
+  color: white;
+  position: relative;
+  top: -3.2px;
+}
+
+.emotion-badge.기쁨 {
+  background-color: #df7615;
+}
+
+.emotion-badge.슬픔 {
+  background-color: #1977c4;
+}
+
+.emotion-badge.분노 {
+  background-color: #f44336;
+}
+
+.emotion-badge.불안 {
+  background-color: #a6a825;
+}
+
+.emotion-badge.중립 {
+  background-color: #9e9e9e;
+}

@@ -38,7 +38,12 @@
     {% for post in posts %}
       <div class="post-card">
         <a href="{{ url_for('post_detail', post_id=post.id) }}">
-          <h3>{{ post.title if post.title else '[제목 없는 감정]' }}</h3>
+          <h3>
+            {{ post.title if post.title else '[제목 없는 감정]' }}
+            {%if post.emotion %}
+              <span class="emotion-badge {{ post.emotion }}">{{ post.emotion }}</span>
+            {% endif %}
+          </h3>
         </a>
         <p class="post-date">{{ post.created_at|format_kst }}</p>
       </div>

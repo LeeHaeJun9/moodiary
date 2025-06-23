@@ -3,11 +3,25 @@
 {% block title %}나의 감정 기록들 - Moodiary{% endblock %}
 
 {% block content %}
+  <div class="search-wrapper">
+    <i class="fas fa-search search-icon"></i>
+    <form action="{{ url_for('my_posts') }}" method="get" class="search-form" autocomplete="off">
+      <input type="text" id="search-input" name="q" placeholder="감정을 검색해보세요" value="{{ request.args.get('q', '') }}">
+      <button type="submit">검색</button>
+      <ul id="suggestion-list" class="suggestions"></ul>
+    </form>
+
+    <div class="search-suggestions">
+      {% for keyword in suggested_keywords %}
+        <button type="button" class="suggest-btn" data-keyword="{{ keyword }}">{{ keyword }}</button>
+      {% endfor %}
+    </div>
+  </div>
   <section class="main-top">
     <h2>📓 나의 감정 기록들</h2>
     <!-- <a class="primary-btn" href="{{ url_for('create_post') }}">새 감정 기록하기</a> -->
     <a class="primary-btn" href="{{ url_for('edit_profile') }}">회원 정보 수정</a>
-    <a class="primary-btn" href="{{ url_for('stats') }}">감정 분석</a>
+    <a class="primary-btn" href="{{ url_for('report') }}">감정 분포</a>
   </section>
 
   <section class="post-list">
@@ -17,6 +31,9 @@
           <h3>
             {% if not post.is_public %}🔒 {% endif %}
             {{ post.title if post.title else '[제목 없음]' }}
+            {%if post.emotion %}
+              <span class="emotion-badge {{ post.emotion }}">{{ post.emotion }}</span>
+            {% endif %}
           </h3>
         </a>
         <p class="post-date">{{ post.created_at|format_kst }}</p>

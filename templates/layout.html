@@ -10,6 +10,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/post.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
+  <script>
+    const toggleReminderUrl = "{{ url_for('toggle_reminder') }}";
+  </script>
+  <script src="{{ url_for('static', filename='js/my_posts.js') }}"></script>
 </body>
 
   {% block extra_css %}{% endblock %}
@@ -47,6 +51,12 @@
           </div>
         {% endif %}
       {% endwith %}
+
+      {% if reminder_message %}
+        <div class="flash-messages">
+          <p>{{ reminder_message }}</p>
+        </div>
+      {% endif %}
 
       {% block content %}{% endblock %}
     </div>

@@ -3,7 +3,7 @@ input[type="email"],
 input[type="password"],
 textarea {
   width: 100%;
-  max-width: 600px;
+  max-width: 525px;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
@@ -36,7 +36,8 @@ textarea {
   cursor: pointer;
 }
 .pretty-checkbox input[type="checkbox"]:checked {
-  background-color: #f2c48c;
+  background-color: #d9a66b;
+  border-color: #d9a66b;
 }
 .pretty-checkbox input[type="checkbox"]::after {
   content: "✔";
@@ -53,7 +54,7 @@ textarea {
 }
 
 .form-container {
-  max-width: 500px;
+  max-width: 550px;
   margin: 40px auto;
   background-color: #fffdf8;
   padding: 28px 32px;
@@ -66,6 +67,7 @@ textarea {
   margin-top: 0;
   margin-bottom: 24px;
   color: #5c4033;
+  padding: 20px 20px;
 }
 
 .form-container label {
@@ -85,14 +87,14 @@ textarea {
   background-color: #fff;
 }
 
-.form-container  {
+/* .form-container  {
   width: 100%;
   padding: 12px;
   font-size: 1rem;
   font-weight: bold;
   border-radius: 6px;
   margin-top: 20px;
-}
+} */
 
 .form-box {
   display: flex;
@@ -116,6 +118,7 @@ textarea {
 .form-box input[type="email"],
 .form-box input[type="password"] {
   padding: 10px 12px;
+  width: 525px;
   border-radius: 6px;
   border: 1px solid #d6c4ae;
   background-color: #fffaf4;
@@ -127,3 +130,106 @@ textarea {
   outline: none;
 }
 
+.reminder-settings {
+  background-color: #f9f7f5;
+  border: 1px solid #ddd;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 2rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  font-family: 'Pretendard', sans-serif;
+}
+
+.reminder-settings label {
+  display: block;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  color: #333;
+}
+
+.reminder-settings input[type="checkbox"] {
+
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #d9a66b; /* 민트 테두리 */
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease-in-out;
+  margin-right: 8px;
+  top: 7px;
+  /* transform: scale(1.2);
+  margin-right: 0.5rem;
+  accent-color: #d9a66b; */
+  
+}
+
+.reminder-settings input[type="checkbox"]:checked {
+  background-color: #d9a66b;
+  border-color: #d9a66b;
+}
+
+.reminder-settings input[type="checkbox"]::after {
+  content: "✔";
+  color: white;
+  font-size: 14px;
+  position: absolute;
+  top: -2px;
+  left: 3px;
+  display: none;
+}
+
+.reminder-settings input[type="checkbox"]:checked::after {
+  display: block;
+}
+
+.reminder-settings input[type="number"] {
+  width: 60px;
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-left: 0.5rem;
+}
+
+.toggle-form-group {
+  display: flex;
+  align-items: center;
+  gap: 15px; 
+  margin-bottom: 10px;
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 18px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 10px; width: 10px;
+  left: 4px; bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: #d9a66b;
+}
+input:checked + .slider:before {
+  transform: translateX(22px);
+}

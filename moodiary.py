@@ -1,8 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-from flask import render_template, request, redirect, url_for, flash, jsonify, Flask
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from pytz import timezone
 from emotion_analyzer import analyze_emotion
 from sqlalchemy import func
@@ -14,6 +14,7 @@ app.config['SECRET_KEY'] = 'your-secret-key'  # 로그인 세션용
 
 db = SQLAlchemy(app)
 
+
 # ✅ 사용자 모델 정의
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -22,6 +23,9 @@ class User(db.Model, UserMixin):
     phone = db.Column(db.String(20), nullable=False)                 # 전화번호
     email = db.Column(db.String(120), unique=True, nullable=False)   # 이메일
     password = db.Column(db.String(200), nullable=False)             # 암호화된 비밀번호
+    last_post_date = db.Column(db.Date, nullable=True)               # 마지막으로 글 작성한 날짜
+    receive_reminders = db.Column(db.Boolean, default=True)
+    reminder_interval_days = db.Column(db.Integer, default=3)
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -58,6 +62,7 @@ class Comment(db.Model):
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
 
 @app.template_filter('format_kst')
 def format_kst(value):
@@ -131,21 +136,6 @@ def logout():
     flash('로그아웃 되었습니다.')
     return redirect(url_for('login'))
 
-## @app.route('/create', methods=['GET', 'POST'])
-##@login_required
-##def create_post():
-##    if request.method == 'POST':
-##        title = request.form['title']
-##        content = request.form['content']
-##        is_public = 'is_public' in request.form
-##        emotion = analyze_emotion(content)
-##      new_post = Post(title=title, content=content, is_public=is_public, author=current_user, emotion=emotion)
-##    db.session.add(new_post)
-##  db.session.commit()
-##flash(f'감정이 분석되어 "{emotion}"으로 저장되었습니다.')
-##        return redirect(url_for('index'))
-##  return render_template('create_post.html')
-
 @app.route('/create', methods=['GET'])
 @login_required
 def create_post():
@@ -174,6 +164,8 @@ def submit_selected_emotion():
         emotion=emotion
     )
     db.session.add(new_post)
+
+    current_user.last_post_date = date.today()
     db.session.commit()
     flash(f'감정이 "{emotion}"으로 저장되었습니다.')
     return redirect(url_for('index'))
@@ -188,6 +180,21 @@ def add_header(response):
 
 @app.route('/')
 def index():
+    reminder_message = None
+    if (
+        current_user.is_authenticated and
+        current_user.receive_reminders and
+        current_user.last_post_date and
+        current_user.reminder_interval_days
+    ):
+        days_since_last_post = (
+            datetime.now(timezone('Asia/Seoul')).date() - current_user.last_post_date
+        ).days
+
+        if days_since_last_post >= current_user.reminder_interval_days:
+            reminder_message = f"{days_since_last_post}일 동안 일기를 작성하지 않았어요. 오늘의 감정을 기록해보세요!"
+
+    
     page = request.args.get('page', 1, type=int)
     per_page = 5
     keyword = request.args.get('q', '', type=str).strip()
@@ -196,15 +203,38 @@ def index():
 
     if keyword:
         search = f"%{keyword}%"
-        query = query = query.filter(
-        Post.title.ilike(search) |
-        Post.content.ilike(search) |
-        Post.emotion.ilike(search)
-    )
+        query = query.filter(
+            Post.title.ilike(search) |
+            Post.content.ilike(search) |
+            Post.emotion.ilike(search)
+        )
 
     posts = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=per_page)
 
-    return render_template('index.html', posts=posts)
+    total_pages = posts.pages
+    current_page = posts.page
+
+    if total_pages <= 5:
+        page_range = range(1, total_pages + 1)
+        show_first_ellipsis = False
+        show_last_ellipsis = False
+    else:
+        start_page = max(1, current_page - 2)
+        end_page = min(total_pages, current_page + 2)
+        page_range = range(start_page, end_page + 1)
+
+        show_first_ellipsis = start_page > 2
+        show_last_ellipsis = end_page < total_pages - 1
+
+    return render_template(
+        'index.html',
+        reminder_message=reminder_message,
+        posts=posts,
+        page_range=page_range,
+        total_pages=total_pages,
+        show_first_ellipsis=show_first_ellipsis,
+        show_last_ellipsis=show_last_ellipsis
+    )
     
 
 @app.route('/post/<int:post_id>', methods=['GET', 'POST'])
@@ -248,7 +278,27 @@ def delete_post(post_id):
     flash('감정 기록이 삭제되었습니다.')
     return redirect(url_for('index'))
 
-@app.route('/my')
+# @app.route('/my')
+# @login_required
+# def my_posts():
+#     page = request.args.get('page', 1, type=int)
+#     per_page = 5
+#     keyword = request.args.get('q', '', type=str).strip()
+
+#     query = Post.query.filter_by(author=current_user)
+
+#     if keyword:
+#         search = f"%{keyword}%"
+#         query = query = query.filter(
+#         Post.title.ilike(search) |
+#         Post.content.ilike(search) |
+#         Post.emotion.ilike(search)
+#     )
+        
+#     posts = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=per_page)
+#     return render_template('my_posts.html', posts=posts)
+
+@app.route('/my', methods=['GET', 'POST'])
 @login_required
 def my_posts():
     page = request.args.get('page', 1, type=int)
@@ -259,16 +309,33 @@ def my_posts():
 
     if keyword:
         search = f"%{keyword}%"
-        query = query = query.filter(
-        Post.title.ilike(search) |
-        Post.content.ilike(search) |
-        Post.emotion.ilike(search)
-    )
+        query = query.filter(
+            Post.title.ilike(search) |
+            Post.content.ilike(search) |
+            Post.emotion.ilike(search)
+        )
         
     posts = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=per_page)
-    return render_template('my_posts.html', posts=posts)
+   
+    total_pages = posts.pages
+    current_page = posts.page
 
+    if total_pages <= 5:
+        page_range = range(1, total_pages + 1)
+        show_first_ellipsis = False
+        show_last_ellipsis = False
+    else:
+        start_page = max(1, current_page - 2)
+        end_page = min(total_pages, current_page + 2)
+        page_range = range(start_page, end_page + 1)
+
+        show_first_ellipsis = start_page > 2
+        show_last_ellipsis = end_page < total_pages - 1
     
+    return render_template('my_posts.html', posts=posts, page_range=page_range,
+        total_pages=total_pages,
+        show_first_ellipsis=show_first_ellipsis,
+        show_last_ellipsis=show_last_ellipsis)
 
 @app.route('/my/edit', methods=['GET', 'POST'])
 @login_required
@@ -281,6 +348,9 @@ def edit_profile():
 
         current_user.name = name
         current_user.email = email
+        current_user.receive_reminders = 'receive_reminders' in request.form
+        current_user.reminder_interval_days = int(request.form.get('reminder_interval_days', 3))
+
 
         if password:
             if password != confirm:
@@ -414,6 +484,16 @@ def report():
         else:
             emotion_counts['중립'] += 1
     return render_template('report.html', emotion_counts=emotion_counts)
+
+@app.route('/toggle_reminder', methods=['POST'])
+@login_required
+def toggle_reminder():
+    data = request.get_json()
+    receive_reminders = data.get('receive_reminders', False)
+    current_user.receive_reminders = receive_reminders
+    db.session.commit()
+    return jsonify({'message': '알림 설정이 저장되었습니다.'})
+
 
 
 # ✅ 실행

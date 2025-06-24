@@ -17,6 +17,17 @@
       {% endfor %}
     </div>
   </div>
+
+  <form method="POST" action="{{ url_for('my_posts') }}">
+    <div class="toggle-form-group">
+      <label for="receive_reminders">감정 일기 알림 받기</label>
+      <label class="switch">
+        <input type="checkbox" name="receive_reminders" id="receive_reminders" {% if current_user.receive_reminders %}checked{% endif %}>
+        <span class="slider round"></span>
+      </label>
+    </div>
+  </form>
+
   <section class="main-top">
     <h2>📓 나의 감정 기록들</h2>
     <!-- <a class="primary-btn" href="{{ url_for('create_post') }}">새 감정 기록하기</a> -->
@@ -47,9 +58,25 @@
       <a href="{{ url_for('my_posts', page=posts.prev_num) }}">« 이전</a>
     {% endif %}
 
-    {% for p in range(1, posts.pages + 1) %}
+    {% if 1 not in page_range %}
+      <a href="{{ url_for('my_posts', page=1) }}">1</a>
+    {% endif %}
+
+    {% if show_first_ellipsis %}
+      <span>...</span>
+    {% endif %}
+
+    {% for p in page_range %}
       <a href="{{ url_for('my_posts', page=p) }}" {% if p == posts.page %}class="active"{% endif %}>{{ p }}</a>
     {% endfor %}
+
+    {% if show_last_ellipsis %}
+      <span>...</span>
+    {% endif %}
+
+    {% if total_pages not in page_range %}
+      <a href="{{ url_for('my_posts', page=total_pages) }}">{{ total_pages }}</a>
+    {% endif %}
 
     {% if posts.has_next %}
       <a href="{{ url_for('my_posts', page=posts.next_num) }}">다음 »</a>

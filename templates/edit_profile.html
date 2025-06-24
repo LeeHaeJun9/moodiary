@@ -21,6 +21,18 @@
     <label for="confirm_password">새 비밀번호 확인:</label>
     <input type="password" name="confirm_password" id="confirm_password">
 
+    <div class="reminder-settings">
+      <label>
+        <input type="checkbox" name="receive_reminders" {% if current_user.receive_reminders %}checked{% endif %}>
+        감정 일기 작성 알림 받기
+      </label>
+
+      <label>
+        알림 간격:
+        <input type="number" name="reminder_interval_days" value="{{ current_user.reminder_interval_days }}"> 일
+      </label>
+    </div>
+
     <button type="submit" class="primary-btn">정보 수정하기</button>
   </form>
 {% endblock %}

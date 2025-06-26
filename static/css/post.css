@@ -269,3 +269,9 @@ form button:hover {
 .emotion-badge.중립 {
   background-color: #9e9e9e;
 }
+
+.post-card.my-own {
+  background-color: #fff7e681;
+  border: 2px solid #ff99005d;
+  box-shadow: 0 2px 5px rgba(255, 152, 0, 0.3);
+}

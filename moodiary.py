@@ -272,31 +272,15 @@ def delete_post(post_id):
     if post.author != current_user:
         flash('삭제 권한이 없습니다.')
         return redirect(url_for('post_detail', post_id=post_id))
+    
+    Comment.query.filter_by(post_id=post.id).delete()
+    
+    Like.query.filter_by(post_id=post.id).delete()
 
     db.session.delete(post)
     db.session.commit()
     flash('감정 기록이 삭제되었습니다.')
     return redirect(url_for('index'))
-
-# @app.route('/my')
-# @login_required
-# def my_posts():
-#     page = request.args.get('page', 1, type=int)
-#     per_page = 5
-#     keyword = request.args.get('q', '', type=str).strip()
-
-#     query = Post.query.filter_by(author=current_user)
-
-#     if keyword:
-#         search = f"%{keyword}%"
-#         query = query = query.filter(
-#         Post.title.ilike(search) |
-#         Post.content.ilike(search) |
-#         Post.emotion.ilike(search)
-#     )
-        
-#     posts = query.order_by(Post.created_at.desc()).paginate(page=page, per_page=per_page)
-#     return render_template('my_posts.html', posts=posts)
 
 @app.route('/my', methods=['GET', 'POST'])
 @login_required
